@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VDM — TSEA</title>
+  <link rel="icon" type="image/png" href="static/favicon.png">
+
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface2: #f0f0f0;
+      --border: #d0d0d0;
+      --accent: #cc1111;
+      --accent2: #991111;
+      --danger: #ff0000;
+      --text: #1a1a1a;
+      --text-muted: #555555;
+      --text-dim: #999999;
+      --radius: 6px;
+      --font-main: Arial, sans-serif;
+      --font-mono: 'Courier New', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* LOGIN */
+    #screen-login {
+      background: var(--bg);
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+    }
+
+    .login-card {
+      position: relative;
+      z-index: 1;
+      width: 380px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 40px 36px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .login-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .login-logo-text {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .login-logo-text span {
+      color: var(--accent);
+    }
+
+    .login-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .login-profiles {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .profile-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .profile-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(204, 17, 17, 0.06);
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .field select option {
+      background: var(--surface);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      margin-top: 8px;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      height: 52px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .topbar-logo {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .topbar-logo span {
+      color: var(--accent);
+    }
+
+    .topbar-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    .topbar-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .topbar-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .tag {
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .tag-supervisor {
+      background: rgba(153, 17, 17, 0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(153, 17, 17, 0.3);
+    }
+
+    .tag-worker {
+      background: rgba(204, 17, 17, 0.08);
+      color: var(--accent);
+      border: 1px solid rgba(204, 17, 17, 0.2);
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      transition: all 0.15s;
+    }
+
+    .btn-icon:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* DASHBOARD */
+    #screen-dashboard {
+      background: var(--bg);
+    }
+
+    .dashboard-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      padding: 16px 12px 8px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .setor-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      margin: 1px 6px;
+      cursor: pointer;
+      transition: all 0.12s;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .setor-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .setor-item.active {
+      background: rgba(204, 17, 17, 0.08);
+      color: var(--accent);
+    }
+
+    .setor-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .setor-count {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .content-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .content-header h2 {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 7px 12px;
+      flex: 1;
+      max-width: 320px;
+    }
+
+    .search-box input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 12px;
+      width: 100%;
+      font-family: var(--font-mono);
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .drawings-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      align-content: start;
+    }
+
+    .drawing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .drawing-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .drawing-thumb {
+      height: 130px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      font-size: 48px;
+      color: var(--border);
+    }
+
+    .drawing-thumb-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--accent);
+    }
+
+    .drawing-info {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .drawing-name {
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .drawing-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      gap: 10px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+    }
+
+    .empty-state-icon {
+      font-size: 40px;
+    }
+
+    /* VIEWER */
+    #screen-viewer {
+      background: #f0f0f0;
+    }
+
+    .viewer-topbar {
+      height: 48px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .viewer-title {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .viewer-version {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(204, 17, 17, 0.08);
+      border: 1px solid rgba(204, 17, 17, 0.25);
+      border-radius: 3px;
+      padding: 2px 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .viewer-version:hover {
+      background: rgba(204, 17, 17, 0.15);
+    }
+
+    .viewer-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8e8e8;
+    }
+
+    .cad-canvas {
+      position: absolute;
+      transition: transform 0.05s;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cad-canvas:active {
+      cursor: grabbing;
+    }
+
+    .cad-frame {
+      background: white;
+      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.15);
+      max-width: 90vw;
+      max-height: 75vh;
+      overflow: hidden;
+    }
+
+    /* Arquivo embed */
+    .cad-frame img {
+      display: block;
+      max-width: 85vw;
+      max-height: 72vh;
+      object-fit: contain;
+    }
+
+    .cad-frame embed {
+      display: block;
+      width: 85vw;
+      height: 72vh;
+      border: none;
+    }
+
+    .cad-frame iframe {
+      display: block;
+      width: 85vw;
+      height: 72vh;
+      border: none;
+    }
+
+    .viewer-controls {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ctrl-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      font-family: var(--font-mono);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .ctrl-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .ctrl-sep {
+      height: 1px;
+      background: var(--border);
+      margin: 2px 0;
+    }
+
+    .viewer-info-bar {
+      height: 32px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 20px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .info-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    /* VERSIONS PANEL */
+    .versions-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+    }
+
+    .versions-overlay.open {
+      display: block;
+    }
+
+    .versions-panel {
+      position: absolute;
+      right: 0;
+      top: 48px;
+      bottom: 32px;
+      width: 340px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+      animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .versions-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .versions-header h3 {
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-mono);
+    }
+
+    .version-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .version-item:hover {
+      background: var(--surface2);
+    }
+
+    .version-item.current {
+      border-left: 3px solid var(--accent);
+      padding-left: 13px;
+    }
+
+    .version-num {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+
+    .version-date {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+    }
+
+    .version-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .version-author {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 5px;
+      font-family: var(--font-mono);
+    }
+
+    /* UPLOAD MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 500px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      animation: fadeUp 0.2s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .modal-body {
+      padding: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      transition: all 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+
+    .btn-accent {
+      padding: 8px 20px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      transition: opacity 0.15s;
+    }
+
+    .btn-accent:hover {
+      opacity: 0.85;
+    }
+
+    .btn-accent:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag {
+      border-color: var(--accent);
+      color: var(--text-muted);
+      background: rgba(204, 17, 17, 0.03);
+    }
+
+    .upload-zone-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .upload-filename {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent);
+      margin-top: 6px;
+    }
+
+    .upload-fab {
+      position: fixed;
+      bottom: 40px;
+      right: 20px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(204, 17, 17, 0.35);
+      transition: all 0.15s;
+      z-index: 50;
+    }
+
+    .upload-fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(204, 17, 17, 0.45);
+    }
+
+    .upload-fab.visible {
+      display: flex;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      z-index: 300;
+      transition: transform 0.25s;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      border-color: #22a060;
+      color: #22a060;
+    }
+
+    .toast.error {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .loading {
+      text-align: center;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+  <div class="screen active" id="screen-login">
+    <div class="login-grid"></div>
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">VDM</div>
+        <div class="login-logo-text">VDM<span>TSEA</span></div>
+      </div>
+      <div class="login-subtitle">Sistema de Visualização Industrial</div>
+      <div style="margin-bottom:16px;">
+        <div
+          style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+          Perfil de acesso</div>
+        <div class="login-profiles">
+          <button class="profile-btn active" onclick="selectProfile('funcionario', this)">Funcionário</button>
+          <button class="profile-btn" onclick="selectProfile('supervisor', this)">Supervisor / Eng.</button>
+        </div>
+      </div>
+      <div class="field"><label>ID / Matrícula</label><input type="text" id="login-user" placeholder="ex: 00123"></div>
+      <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+      <button class="btn-primary" onclick="doLogin()">ENTRAR →</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="screen-dashboard">
+    <div class="topbar">
+      <div class="topbar-logo">VDM<span>TSEA</span></div>
+      <div class="topbar-sep"></div>
+      <div class="topbar-title" id="dash-sector-title">Carregando...</div>
+      <div class="topbar-user">
+        <span id="dash-user-tag" class="tag tag-worker">Funcionário</span>
+        <span id="dash-username" style="font-size:12px;"></span>
+        <div class="topbar-avatar" id="dash-avatar">--</div>
+        <button class="btn-icon" title="Sair" onclick="doLogout()" style="margin-left:4px;">⏻</button>
+      </div>
+    </div>
+
+    <div class="dashboard-body">
+      <div class="sidebar">
+        <div class="sidebar-section">Setores</div>
+        <div id="sidebar-setores">
+          <div class="loading">carregando...</div>
+        </div>
+        <div class="sidebar-section" style="margin-top:auto;">Sistema</div>
+        <div class="setor-item" onclick="showToast('Logs de auditoria — em breve', '')">
+          <div class="setor-dot" style="background:var(--text-dim)"></div>
+          Auditoria
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="content-header">
+          <h2 id="content-setor-name">—</h2>
+          <div class="search-box">
+            <span style="color:var(--text-dim);font-size:13px;">⌕</span>
+            <input type="text" id="search-input" placeholder="Buscar desenho..." oninput="filterDrawings()">
+          </div>
+          <button class="btn-icon" title="Atualizar" onclick="loadDrawings()">↻</button>
+        </div>
+        <div class="drawings-grid" id="drawings-grid"></div>
+      </div>
+    </div>
+
+    <button class="upload-fab supervisor-fab" onclick="openUploadModal()">＋ Nova Versão</button>
+  </div>
+
+  <!-- VIEWER -->
+  <div class="screen" id="screen-viewer">
+    <div class="viewer-topbar">
+      <button class="btn-icon" onclick="goTo('screen-dashboard')" title="Voltar">←</button>
+      <div class="viewer-title" id="viewer-title">—</div>
+      <div class="viewer-version" onclick="openVersions()" id="viewer-ver-badge">— ▾</div>
+      <div class="topbar-sep"></div>
+      <button class="btn-icon" id="viewer-upload-btn" class="hidden" onclick="openUploadModal()"
+        title="Upload nova versão">↑</button>
+      <button class="btn-icon" title="Sair" onclick="doLogout()">⏻</button>
+    </div>
+
+    <div class="viewer-area" id="viewer-area">
+      <div class="cad-canvas" id="cad-canvas">
+        <div class="cad-frame" id="cad-frame">
+          <div class="loading" style="width:400px;padding:80px 0;">Selecione uma versão para visualizar</div>
+        </div>
+      </div>
+      <div class="viewer-controls">
+        <button class="ctrl-btn" onclick="zoom(1.2)" title="Zoom +">+</button>
+        <button class="ctrl-btn" onclick="zoom(0.8)" title="Zoom −">−</button>
+        <div class="ctrl-sep"></div>
+        <button class="ctrl-btn" onclick="resetZoom()" title="Resetar" style="font-size:13px;">⌖</button>
+      </div>
+    </div>
+
+    <div class="viewer-info-bar">
+      <span><span class="info-dot"></span><span id="zoom-level">Zoom: 100%</span></span>
+      <span><span class="info-dot" style="background:var(--accent)"></span><span id="viewer-info-rev">—</span></span>
+      <span><span class="info-dot" style="background:var(--text-dim)"></span><span
+          id="viewer-info-setor">—</span></span>
+      <span style="margin-left:auto;color:var(--text-dim);" id="viewer-info-meta">—</span>
+    </div>
+  </div>
+
+  <!-- VERSIONS PANEL -->
+  <div class="versions-overlay" id="versions-overlay" onclick="closeVersionsOutside(event)">
+    <div class="versions-panel" id="versions-panel">
+      <div class="versions-header">
+        <h3>Histórico de Versões</h3>
+        <button class="btn-icon" onclick="closeVersions()">✕</button>
+      </div>
+      <div id="versions-list" style="overflow-y:auto;flex:1;"></div>
+    </div>
+  </div>
+
+  <!-- UPLOAD MODAL -->
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Publicar Nova Versão de Desenho</h3>
+        <button class="btn-icon" onclick="closeUploadModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+          ondrop="handleDrop(event)">
+          <div class="upload-zone-icon">⇪</div>
+          <div>Arraste o arquivo aqui ou clique para selecionar</div>
+          <div style="font-size:10px;margin-top:6px;font-family:var(--font-mono);color:var(--text-dim);">.dwg · .dxf ·
+            .pdf · .png · .jpg · .svg — Máx. 100MB</div>
+          <div class="upload-filename" id="upload-filename"></div>
+        </div>
+        <input type="file" id="file-input" style="display:none" accept=".dwg,.dxf,.pdf,.png,.jpg,.jpeg,.svg"
+          onchange="handleFileSelect(this)">
+
+        <div class="field">
+          <label>Nome do Desenho</label>
+          <input type="text" id="up-nome" placeholder="ex: FLANGE-SUPERIOR-A3">
+        </div>
+        <div class="field">
+          <label>Setor Destino</label>
+          <select id="up-setor"></select>
+        </div>
+        <div class="field">
+          <label>Número da Revisão</label>
+          <input type="text" id="up-revisao" placeholder="ex: 3.3">
+        </div>
+        <div class="field">
+          <label>Descrição das Alterações</label>
+          <textarea id="up-descricao" placeholder="Descreva as modificações realizadas nesta revisão..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeUploadModal()">Cancelar</button>
+        <button class="btn-accent" id="btn-publicar" onclick="submitUpload()">Publicar Versão →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── Estado global ────────────────────────────────────────────────────────────
+    let currentProfile = 'funcionario';
+    let currentUser = {};
+    let currentSetor = '';
+    let currentDesenho = null;
+    let allDrawings = [];
+    let selectedFile = null;
+    let currentZoom = 1;
+    let isDragging = false;
+    let startX, startY, translateX = 0, translateY = 0;
+
+    // ── Utilitários ──────────────────────────────────────────────────────────────
+    function goTo(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + type + ' show';
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    function selectProfile(p, btn) {
+      currentProfile = p;
+      document.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // ── Login / Logout ───────────────────────────────────────────────────────────
+    async function doLogin() {
+      const matricula = document.getElementById('login-user').value.trim();
+      const senha = document.getElementById('login-pass').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ perfil: currentProfile, matricula, senha })
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+          showToast(data.msg || 'Credenciais inválidas', 'error');
+          ['login-user', 'login-pass'].forEach(id => {
+            const el = document.getElementById(id);
+            el.style.borderColor = 'var(--danger)';
+            setTimeout(() => el.style.borderColor = '', 1500);
+          });
+          return;
+        }
+
+        currentUser = data;
+        const isSup = currentProfile === 'supervisor';
+        document.getElementById('dash-user-tag').className = 'tag ' + (isSup ? 'tag-supervisor' : 'tag-worker');
+        document.getElementById('dash-user-tag').textContent = isSup ? 'Supervisor' : 'Funcionário';
+        document.getElementById('dash-username').textContent = data.nome;
+        document.getElementById('dash-avatar').textContent = data.nome.split(' ').map(w => w[0]).slice(0, 2).join('');
+
+        document.querySelector('.supervisor-fab').classList.toggle('visible', isSup);
+        document.getElementById('viewer-upload-btn').classList.toggle('hidden', !isSup);
+
+        await loadSetores();
+        goTo('screen-dashboard');
+        showToast('Acesso autorizado ✓', 'success');
+
+      } catch (e) {
+        showToast('Erro ao conectar com o servidor', 'error');
+      }
+    }
+
+    function doLogout() {
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+      goTo('screen-login');
+    }
+
+    document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    // ── Setores ──────────────────────────────────────────────────────────────────
+    const SETOR_CORES = ['#cc1111', '#991111', '#e05500', '#0066cc', '#7700cc', '#007744'];
+
+    async function loadSetores() {
+      const res = await fetch('/api/setores');
+      const setores = await res.json();
+
+      const isSup = currentProfile === 'supervisor';
+      // Funcionário só vê Montagem
+      const visíveis = isSup ? setores : setores.filter(s => s === 'Montagem');
+
+      const container = document.getElementById('sidebar-setores');
+      container.innerHTML = '';
+      visíveis.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = 'setor-item';
+        div.innerHTML = `<div class="setor-dot" style="background:${SETOR_CORES[i % SETOR_CORES.length]}"></div>${s}<span class="setor-count" id="count-${s}">—</span>`;
+        div.onclick = () => selectSetor(div, s);
+        container.appendChild(div);
+      });
+
+      // Seleciona o primeiro automaticamente
+      if (visíveis.length) {
+        selectSetor(container.firstChild, visíveis[0]);
+      }
+
+      // Popula select do modal de upload com todos os setores (supervisor)
+      const upSetor = document.getElementById('up-setor');
+      upSetor.innerHTML = '';
+      setores.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = s;
+        upSetor.appendChild(opt);
+      });
+    }
+
+    function selectSetor(el, name) {
+      document.querySelectorAll('.setor-item').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      currentSetor = name;
+      document.getElementById('content-setor-name').textContent = name;
+      document.getElementById('dash-sector-title').textContent = 'Setor: ' + name;
+      loadDrawings();
+    }
+
+    // ── Desenhos ─────────────────────────────────────────────────────────────────
+    async function loadDrawings() {
+      const grid = document.getElementById('drawings-grid');
+      grid.innerHTML = '<div class="loading">carregando desenhos...</div>';
+
+      try {
+        const res = await fetch(`/api/desenhos?setor=${encodeURIComponent(currentSetor)}`);
+        allDrawings = await res.json();
+
+        // Atualiza contador na sidebar
+        const countEl = document.getElementById(`count-${currentSetor}`);
+        if (countEl) countEl.textContent = allDrawings.length;
+
+        renderDrawings(allDrawings);
+      } catch (e) {
+        grid.innerHTML = '<div class="loading">Erro ao carregar desenhos</div>';
+      }
+    }
+
+    function renderDrawings(list) {
+      const grid = document.getElementById('drawings-grid');
+      grid.innerHTML = '';
+
+      if (!list.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-state-icon">📂</div>
+        <div>Nenhum desenho neste setor</div>
+        ${currentProfile === 'supervisor' ? '<div style="font-size:11px">Use o botão + para publicar o primeiro</div>' : ''}
+      </div>`;
+        return;
+      }
+
+      list.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'drawing-card';
+        const ext = d.versoes[0]?.arquivo?.split('.').pop()?.toUpperCase() || 'CAD';
+        const icons = { PDF: '📄', PNG: '🖼️', JPG: '🖼️', JPEG: '🖼️', SVG: '🖼️', DWG: '📐', DXF: '📐' };
+        const icon = icons[ext] || '📐';
+
+        const isImage = ['PNG', 'JPG', 'JPEG', 'SVG'].includes(ext);
+        const thumbUrl = isImage ? `/api/arquivo/${d.versoes[0].arquivo}` : null;
+        const isSup = currentProfile === 'supervisor';
+
+        card.innerHTML = `
+        <div class="drawing-thumb">
+          ${thumbUrl
+            ? `<img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">`
+            : `<span>${icon}</span>`}
+          <div class="drawing-thumb-badge">rev.${d.versao_atual}</div>
+          ${isSup ? `<button onclick="deleteDesenho(event, ${d.id})" style="position:absolute;top:8px;left:8px;background:rgba(204,17,17,0.85);border:none;border-radius:4px;color:#fff;font-size:11px;padding:3px 8px;cursor:pointer;font-family:var(--font-mono);">✕ excluir</button>` : ''}
+        </div>
+        <div class="drawing-info">
+          <div class="drawing-name" title="${d.nome}">${d.nome}</div>
+          <div class="drawing-meta">
+            <span>${ext}</span>
+            <span>${d.versoes[0]?.data?.split(' ')[0] || '—'}</span>
+          </div>
+        </div>`;
+        card.onclick = () => openViewer(d);
+        grid.appendChild(card);
+      });
+    }
+
+    async function deleteDesenho(e, id) {
+      e.stopPropagation(); // não abre o viewer ao clicar
+      if (!confirm('Excluir este desenho e todas as suas versões? Esta ação não pode ser desfeita.')) return;
+
+      try {
+        const res = await fetch(`/api/desenhos/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('Desenho excluído ✓', 'success');
+          loadDrawings();
+        } else {
+          showToast(data.msg || 'Erro ao excluir', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão', 'error');
+      }
+    }
+
+    function filterDrawings() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      renderDrawings(allDrawings.filter(d => d.nome.toLowerCase().includes(q)));
+    }
+
+    // ── Viewer ───────────────────────────────────────────────────────────────────
+    function openViewer(desenho) {
+      currentDesenho = desenho;
+      document.getElementById('viewer-title').textContent = desenho.nome;
+      document.getElementById('viewer-info-setor').textContent = currentSetor;
+
+      // Carrega versão mais recente
+      if (desenho.versoes.length) loadVersion(desenho.versoes[0]);
+
+      resetZoom();
+      goTo('screen-viewer');
+    }
+
+    function loadVersion(versao) {
+      const frame = document.getElementById('cad-frame');
+      const url = `/api/arquivo/${versao.arquivo}`;
+      const ext = versao.arquivo.split('.').pop().toLowerCase();
+
+      document.getElementById('viewer-ver-badge').textContent = `Rev. ${versao.revisao} ▾`;
+      document.getElementById('viewer-info-rev').textContent = `Revisão ${versao.revisao}`;
+      document.getElementById('viewer-info-meta').textContent = `${versao.autor} — ${versao.data}`;
+
+      if (['png', 'jpg', 'jpeg'].includes(ext)) {
+        frame.innerHTML = `<img src="${url}?t=${Date.now()}" style="max-width:85vw;max-height:72vh;display:block;object-fit:contain;">`;
+      } else if (ext === 'svg') {
+        frame.innerHTML = `<img src="${url}?t=${Date.now()}" style="max-width:85vw;max-height:72vh;display:block;">`;
+      } else if (ext === 'pdf') {
+        frame.innerHTML = `<iframe src="${url}?t=${Date.now()}" style="width:85vw;height:72vh;border:none;display:block;"></iframe>`;
+      } else {
+        frame.innerHTML = `
+        <div style="width:480px;padding:60px 40px;text-align:center;font-family:var(--font-mono);color:var(--text-muted);">
+          <div style="font-size:48px;margin-bottom:16px;">📐</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px;">${versao.arquivo}</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:20px;">Arquivo ${ext.toUpperCase()} — Rev. ${versao.revisao}</div>
+          <a href="${url}" download style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:12px;text-decoration:none;font-weight:600;">⬇ Baixar arquivo</a>
+          <div style="margin-top:12px;font-size:10px;color:var(--text-dim);">Para visualizar .dwg/.dxf use AutoCAD ou LibreCAD</div>
+        </div>`;
+      }
+
+      document.querySelectorAll('.version-item').forEach(el => el.classList.remove('current'));
+      const active = document.querySelector(`.version-item[data-rev="${versao.revisao}"]`);
+      if (active) active.classList.add('current');
+
+      resetZoom();
+      closeVersions();
+      showToast(`Revisão ${versao.revisao} carregada ✓`, 'success');
+    }
+
+    // ── Painel de versões ────────────────────────────────────────────────────────
+    function openVersions() {
+      if (!currentDesenho) return;
+      const list = document.getElementById('versions-list');
+      list.innerHTML = '';
+
+      currentDesenho.versoes.forEach((v, i) => {
+        const div = document.createElement('div');
+        div.className = 'version-item' + (i === 0 ? ' current' : '');
+        div.dataset.rev = v.revisao;
+        div.innerHTML = `
+      <div class="version-num">Rev. ${v.revisao}${i === 0 ? ' ★ atual' : ''}</div>
+      <div class="version-date">${v.data}</div>
+      <div class="version-desc">${v.descricao || '—'}</div>
+      <div class="version-author">${v.autor}</div>`;
+        div.onclick = () => loadVersion(v);
+        list.appendChild(div);
+      });
+
+      document.getElementById('versions-overlay').classList.add('open');
+    }
+
+    function closeVersions() { document.getElementById('versions-overlay').classList.remove('open'); }
+    function closeVersionsOutside(e) { if (!e.target.closest('#versions-panel')) closeVersions(); }
+
+    // ── Zoom / Pan ───────────────────────────────────────────────────────────────
+    function zoom(f) { currentZoom = Math.min(Math.max(currentZoom * f, 0.2), 8); applyTransform(); }
+    function resetZoom() { currentZoom = 1; translateX = 0; translateY = 0; applyTransform(); }
+    function applyTransform() {
+      document.getElementById('cad-canvas').style.transform = `translate(${translateX}px,${translateY}px) scale(${currentZoom})`;
+      document.getElementById('zoom-level').textContent = `Zoom: ${Math.round(currentZoom * 100)}%`;
+    }
+    const canvas = document.getElementById('cad-canvas');
+    canvas.addEventListener('mousedown', e => { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; });
+    document.addEventListener('mousemove', e => { if (!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; applyTransform(); });
+    document.addEventListener('mouseup', () => isDragging = false);
+    document.getElementById('viewer-area').addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY < 0 ? 1.1 : 0.9); }, { passive: false });
+
+    // ── Upload modal ─────────────────────────────────────────────────────────────
+    function openUploadModal() {
+      // Pré-preenche nome/setor se veio do viewer
+      if (currentDesenho) {
+        document.getElementById('up-nome').value = currentDesenho.nome;
+        document.getElementById('up-setor').value = currentSetor;
+      }
+      document.getElementById('upload-modal').classList.add('open');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('upload-modal').classList.remove('open');
+      selectedFile = null;
+      document.getElementById('upload-filename').textContent = '';
+      document.getElementById('up-revisao').value = '';
+      document.getElementById('up-descricao').value = '';
+    }
+
+    function handleFileSelect(input) {
+      if (input.files[0]) { selectedFile = input.files[0]; document.getElementById('upload-filename').textContent = '📎 ' + selectedFile.name; }
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('upload-zone').classList.remove('drag');
+      const file = e.dataTransfer.files[0];
+      if (file) { selectedFile = file; document.getElementById('upload-filename').textContent = '📎 ' + file.name; }
+    }
+
+    async function submitUpload() {
+      const nome = document.getElementById('up-nome').value.trim();
+      const setor = document.getElementById('up-setor').value;
+      const revisao = document.getElementById('up-revisao').value.trim();
+      const descricao = document.getElementById('up-descricao').value.trim();
+
+      if (!nome || !setor || !revisao || !selectedFile) {
+        showToast('Preencha todos os campos e selecione um arquivo', 'error'); return;
+      }
+
+      const btn = document.getElementById('btn-publicar');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      const fd = new FormData();
+      fd.append('arquivo', selectedFile);
+      fd.append('nome', nome);
+      fd.append('setor', setor);
+      fd.append('revisao', revisao);
+      fd.append('descricao', descricao);
+      fd.append('autor', currentUser.nome || 'Supervisor');
+
+      try {
+        const res = await fetch('/api/desenhos/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (data.ok) {
+          showToast('Versão publicada com sucesso ✓', 'success');
+          closeUploadModal();
+          loadDrawings();
+        } else {
+          showToast(data.msg || 'Erro ao publicar', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão com o servidor', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Publicar Versão →';
+      }
+    }
+  </script>
+</body>
+
+</html>
