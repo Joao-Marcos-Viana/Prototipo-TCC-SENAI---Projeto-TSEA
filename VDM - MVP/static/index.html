@@ -1135,7 +1135,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeUploadModal()">Cancelar</button>
-        <button class="btn-accent" id="btn-publicar" onclick="submitUpload()">Publicar Versão →</button>
+        <button type="button" id="btn-publicar" onclick="submitUpload(event)">Publicar Versão →</button>
       </div>
     </div>
   </div>
@@ -1174,12 +1174,14 @@
     }
 
     // ── Login / Logout ───────────────────────────────────────────────────────────
-    async function doLogin() {
-      const matricula = document.getElementById('login-user').value.trim();
-      const senha = document.getElementById('login-pass').value;
+    async function doLogin(e) {
+    if (e && e.preventDefault) e.preventDefault(); // Impede o refresh da tela de login
+
+    const matricula = document.getElementById('login-user').value.trim();
+    const senha = document.getElementById('login-pass').value;
 
       try {
-        const res = await fetch('/api/login', {
+        const res = await fetch('http://localhost:8085/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ perfil: currentProfile, matricula, senha })
@@ -1227,7 +1229,7 @@
     const SETOR_CORES = ['#cc1111', '#991111', '#e05500', '#0066cc', '#7700cc', '#007744'];
 
     async function loadSetores() {
-      const res = await fetch('/api/setores');
+      const res = await fetch('http://localhost:8085/api/setores');
       const setores = await res.json();
 
       const isSup = currentProfile === 'supervisor';
@@ -1274,7 +1276,7 @@
       grid.innerHTML = '<div class="loading">carregando desenhos...</div>';
 
       try {
-        const res = await fetch(`/api/desenhos?setor=${encodeURIComponent(currentSetor)}`);
+        const res = await fetch(`http://localhost:8085/api/desenhos?setor=${encodeURIComponent(currentSetor)}`);
         allDrawings = await res.json();
 
         // Atualiza contador na sidebar
@@ -1308,7 +1310,7 @@
         const icon = icons[ext] || '📐';
 
         const isImage = ['PNG', 'JPG', 'JPEG', 'SVG'].includes(ext);
-        const thumbUrl = isImage ? `/api/arquivo/${d.versoes[0].arquivo}` : null;
+        const thumbUrl = isImage ? `http://localhost:8085/api/arquivo/${d.versoes[0].arquivo}` : null;
         const isSup = currentProfile === 'supervisor';
 
         card.innerHTML = `
@@ -1336,7 +1338,7 @@
       if (!confirm('Excluir este desenho e todas as suas versões? Esta ação não pode ser desfeita.')) return;
 
       try {
-        const res = await fetch(`/api/desenhos/${id}`, { method: 'DELETE' });
+        const res = await fetch(`http://localhost:8085/api/desenhos/${id}`, { method: 'DELETE' });
         const data = await res.json();
         if (data.ok) {
           showToast('Desenho excluído ✓', 'success');
@@ -1369,7 +1371,7 @@
 
     function loadVersion(versao) {
       const frame = document.getElementById('cad-frame');
-      const url = `/api/arquivo/${versao.arquivo}`;
+      const url = `http://localhost:8085/api/arquivo/${versao.arquivo}`;
       const ext = versao.arquivo.split('.').pop().toLowerCase();
 
       document.getElementById('viewer-ver-badge').textContent = `Rev. ${versao.revisao} ▾`;
@@ -1469,7 +1471,9 @@
       if (file) { selectedFile = file; document.getElementById('upload-filename').textContent = '📎 ' + file.name; }
     }
 
-    async function submitUpload() {
+      async function submitUpload(e) { 
+      if (e) e.preventDefault(); 
+
       const nome = document.getElementById('up-nome').value.trim();
       const setor = document.getElementById('up-setor').value;
       const revisao = document.getElementById('up-revisao').value.trim();
@@ -1492,7 +1496,7 @@
       fd.append('autor', currentUser.nome || 'Supervisor');
 
       try {
-        const res = await fetch('/api/desenhos/upload', { method: 'POST', body: fd });
+        const res = await fetch('http://localhost:8085/api/desenhos/upload', { method: 'POST', body: fd });
         const data = await res.json();
 
         if (data.ok) {
