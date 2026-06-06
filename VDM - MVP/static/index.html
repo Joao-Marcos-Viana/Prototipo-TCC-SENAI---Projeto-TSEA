@@ -1135,7 +1135,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeUploadModal()">Cancelar</button>
-        <button type="button" id="btn-publicar" onclick="submitUpload(event)">Publicar Versão →</button>
+        <button type="button" id="btn-publicar" onclick="submitUpload()">Publicar Versão →</button>
       </div>
     </div>
   </div>
@@ -1199,6 +1199,7 @@
         }
 
         currentUser = data;
+        sessionStorage.setItem('userLogado', JSON.stringify(data));
         const isSup = currentProfile === 'supervisor';
         document.getElementById('dash-user-tag').className = 'tag ' + (isSup ? 'tag-supervisor' : 'tag-worker');
         document.getElementById('dash-user-tag').textContent = isSup ? 'Supervisor' : 'Funcionário';
@@ -1218,6 +1219,7 @@
     }
 
     function doLogout() {
+      sessionStorage.removeItem('userLogado');
       document.getElementById('login-user').value = '';
       document.getElementById('login-pass').value = '';
       goTo('screen-login');
@@ -1513,6 +1515,26 @@
         btn.textContent = 'Publicar Versão →';
       }
     }
+    // Verificação automática ao carregar/recarregar a página
+    window.addEventListener('DOMContentLoaded', () => {
+      const salvo = sessionStorage.getItem('userLogado');
+      if (salvo) {
+        currentUser = JSON.parse(salvo);
+        currentProfile = currentUser.perfil;
+        
+        const isSup = currentProfile === 'supervisor';
+        document.getElementById('dash-user-tag').className = 'tag ' + (isSup ? 'tag-supervisor' : 'tag-worker');
+        document.getElementById('dash-user-tag').textContent = isSup ? 'Supervisor' : 'Funcionário';
+        document.getElementById('dash-username').textContent = currentUser.nome;
+        document.getElementById('dash-avatar').textContent = currentUser.nome.split(' ').map(w => w[0]).slice(0, 2).join('');
+        
+        document.querySelector('.supervisor-fab').classList.toggle('visible', isSup);
+        document.getElementById('viewer-upload-btn').classList.toggle('hidden', !isSup);
+        
+        loadSetores();
+        goTo('screen-dashboard');
+      }
+    });
   </script>
 </body>
 

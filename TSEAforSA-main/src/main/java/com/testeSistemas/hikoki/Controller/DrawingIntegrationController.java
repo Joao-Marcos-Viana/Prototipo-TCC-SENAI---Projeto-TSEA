@@ -39,10 +39,10 @@ public class DrawingIntegrationController {
 
     private final String UPLOAD_DIR = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator + "uploads" + File.separator;
 
-    // 1. LOGIN INTEGRADO (Busca no banco ou usa os padrões do TCC para fallback seguro)
+    // 1. LOGIN INTEGRADO E CORRIGIDO POR PERFIL
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> payload) {
-        String perfil = payload.get("perfil");
+        String perfil = payload.get("perfil"); // "funcionario" ou "supervisor"
         String matricula = payload.get("matricula");
         String senha = payload.get("senha");
 
@@ -51,6 +51,7 @@ public class DrawingIntegrationController {
                 .filter(u -> u.getIdUser().toString().equals(matricula) || u.getNomeUser().equalsIgnoreCase(matricula))
                 .findFirst().orElse(null);
 
+        // Se achou no banco, valida a senha (aqui você pode depois amarrar com a regra do seu banco se tiver coluna de perfil)
         if (usuarioEncontrado != null && passwordEncoder.matches(senha, usuarioEncontrado.getKey())) {
             Map<String, Object> response = new HashMap<>();
             response.put("ok", true);
@@ -59,10 +60,23 @@ public class DrawingIntegrationController {
             return ResponseEntity.ok(response);
         }
 
-        // Fallback robusto para os dados padrão do README caso o banco esteja vazio
-        if (("00123".equals(matricula) && "1234".equals(senha)) || ("admin".equals(matricula) && "admin1234".equals(senha))) {
-            String nome = "admin".equals(matricula) ? "Ana P. Ramos" : "João Silva";
-            return ResponseEntity.ok(Map.of("ok", true, "perfil", perfil, "nome", nome));
+        // --- REGRA DO FALLBACK ROBUSTO (DADOS PADRÃO DO TCC) ---
+
+        // 1. Se o usuário digitou os dados do ADMIN
+        if ("admin".equals(matricula) && "admin1234".equals(senha)) {
+            // O Admin pode entrar como Supervisor (padrão) ou como Funcionário (para testes)
+            return ResponseEntity.ok(Map.of("ok", true, "perfil", perfil, "nome", "Ana P. Ramos (Admin)"));
+        }
+
+        // 2. Se o usuário digitou os dados do FUNCIONÁRIO COMUM
+        if ("00123".equals(matricula) && "1234".equals(senha)) {
+            // Bloqueia se o funcionário comum tentar entrar como Supervisor!
+            if ("supervisor".equalsIgnoreCase(perfil)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("ok", false, "msg", "Acesso negado: Esta matrícula não possui privilégios de Supervisor."));
+            }
+            // Se tentou entrar como funcionário, deixa passar normal
+            return ResponseEntity.ok(Map.of("ok", true, "perfil", "funcionario", "nome", "João Silva"));
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("ok", false, "msg", "Matrícula ou senha incorretos"));
